@@ -197,7 +197,7 @@ $activeTrips = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </a>
 
             <!-- ADDED REGISTRATION LINK -->
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
+            <a href="register.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
                 <i class="ph ph-user-plus text-xl"></i>
                 <span class="font-medium">Registration</span>
             </a>
@@ -242,7 +242,21 @@ $activeTrips = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     <input type="text" placeholder="Search vehicles, drivers..." class="bg-black/20 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-gold w-64 transition-colors">
                 </div>
+<?php
+// Fetch Manager Name
+$stmt = $conn->prepare("
+    SELECT m.full_name 
+    FROM managers m
+    WHERE m.user_id = :user_id
+");
 
+$stmt->bindParam(':user_id', $_SESSION['user_id']);
+$stmt->execute();
+
+$managerData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$managerName = $managerData ? $managerData['full_name'] : "Manager";
+?>
                 <!-- Profile Actions -->
                 <div class="flex items-center gap-4 pl-6 border-l border-white/10">
                     <button class="relative text-gray-400 hover:text-white transition-colors">
@@ -251,7 +265,7 @@ $activeTrips = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </button>
                     <div class="flex items-center gap-3 cursor-pointer group">
                         <div class="text-right hidden sm:block">
-                            <p class="text-sm font-medium text-white group-hover:text-brand-gold transition-colors">Alex Mercer</p>
+                            <p class="text-sm font-medium text-white group-hover:text-brand-gold transition-colors"><?= htmlspecialchars($managerName) ?></p>
                             <p class="text-xs text-gray-500">Fleet Manager</p>
                         </div>
                         <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
@@ -272,7 +286,10 @@ $activeTrips = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <!-- Welcome & Quick Actions -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 class="text-xl text-gray-300 font-light">Welcome back, <span class="text-white font-medium">Alex</span></h2>
+                    <h2 class="text-xl text-gray-300 font-light">Welcome back, 
+<span class="text-white font-medium">
+    <?= htmlspecialchars(explode(' ', $managerName)[0]) ?>
+</span></h2>
                     <p class="text-sm text-gray-500 mt-1">Here is what's happening with your fleet today.</p>
                 </div>
                 <div class="flex gap-3">
