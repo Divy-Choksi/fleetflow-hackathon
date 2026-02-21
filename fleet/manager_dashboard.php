@@ -195,6 +195,12 @@ $activeTrips = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <i class="ph ph-users text-xl"></i>
                 <span class="font-medium">Drivers</span>
             </a>
+
+            <!-- ADDED REGISTRATION LINK -->
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
+                <i class="ph ph-user-plus text-xl"></i>
+                <span class="font-medium">Registration</span>
+            </a>
             
             <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
                 <i class="ph ph-map-pin-line text-xl"></i>
