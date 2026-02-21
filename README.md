@@ -1,45 +1,50 @@
-FleetFlow — Operational Intelligence for Delivery Fleets
+FleetFlow
+Operational Intelligence for Fleet & Logistics Management
 
-FleetFlow is a role-based fleet operations platform built during a hackathon to bring structure, visibility, and control to delivery fleet management.
+FleetFlow is a role-based fleet operations system built during a hackathon to bring structure, visibility, and control to delivery fleet management.
 
-Instead of scattered logs, manual tracking, and operational guesswork, FleetFlow provides a centralized command system that helps organizations manage vehicles, drivers, trips, safety compliance, and operational costs in one place.
+Instead of manual logs and scattered information, FleetFlow provides a centralized digital platform to manage vehicles, drivers, trips, safety compliance, and operational costs in a single environment.
 
-Why FleetFlow Exists
+The Problem
 
-In many small and mid-size logistics operations:
+In many fleet operations:
 
-Dispatchers don’t know which vehicles are actually available
+Vehicle availability is unclear
 
-Drivers with expired licenses go unnoticed
+Dispatch decisions are made manually
 
-Maintenance is reactive instead of planned
+Driver license expiry goes unnoticed
 
-Fuel and repair costs are hard to track
+Maintenance is reactive, not planned
 
-Managers lack real operational visibility
+Fuel and repair costs are difficult to track
 
-FleetFlow was designed to solve these real operational gaps — not just to display data, but to enforce rules, control workflows, and prevent mistakes.
+Managers lack real-time operational visibility
 
-What Makes FleetFlow Different
+FleetFlow was built to solve these operational challenges through structured workflows and rule-based controls.
 
-FleetFlow is built around business rules, not just dashboards:
+What Makes FleetFlow Unique
+
+FleetFlow focuses on operational control, not just dashboards.
+
+Key system rules:
 
 Trips cannot be created if cargo exceeds vehicle capacity
 
 Drivers with expired licenses cannot be assigned
 
-Adding a maintenance record automatically removes a vehicle from dispatch
+Adding a maintenance record automatically marks the vehicle In Maintenance
 
-Completing a trip automatically frees the vehicle
+Completing a trip makes the vehicle Available again
 
-Expenses are linked to assets for cost visibility
+Expenses are linked to vehicles for cost tracking
 
-This makes the system behave like a real operational control platform.
+This ensures the system actively prevents operational errors.
 
 System Roles
 Fleet Manager
 
-Fleet command dashboard
+Command Center Dashboard
 
 Vehicle lifecycle management
 
@@ -47,7 +52,7 @@ Driver management
 
 Maintenance control
 
-Operational and performance reports
+Operational reports and analytics
 
 Dispatcher
 
@@ -55,7 +60,7 @@ Create and assign trips
 
 Live dispatch monitoring
 
-Vehicle and driver availability view
+View vehicle and driver availability
 
 Capacity validation before dispatch
 
@@ -67,45 +72,47 @@ Driver compliance monitoring
 
 License expiry tracking
 
-Risk identification (expired / expiring licenses)
+Risk identification (expired or expiring licenses)
 
-Driver status control (On Duty / Suspended)
+Driver status management (On Duty / Off Duty / Suspended)
 
 Financial Analyst
 
 Operational cost overview
 
-Fuel and maintenance expense tracking
+Fuel expense tracking
+
+Maintenance cost monitoring
 
 Expense entry and history
 
 Vehicle-wise cost analysis
 
-Cost per trip visibility
+Cost per trip insights
 
 Core Workflow
 
-Vehicle registered → Available
+Vehicle registered → Status: Available
 
-Dispatcher assigns driver and vehicle
+Dispatcher assigns vehicle and driver
 
 System validates:
 
-Capacity
+Cargo capacity
 
-Driver license
+Driver license validity
 
-Trip starts → Vehicle marked On Trip
+Trip started → Vehicle status: On Trip
 
-Trip completed → Vehicle becomes Available
+Trip completed → Vehicle status: Available
 
-Maintenance logged → Vehicle marked In Maintenance
+Maintenance logged → Vehicle status: In Maintenance
 
-Expenses recorded → Cost updated per asset
+Expenses recorded → Cost updated per vehicle
 
-Technology
+Technology Stack
 
-Frontend:
+Frontend
 
 HTML
 
@@ -115,11 +122,11 @@ JavaScript
 
 PHP (UI structure with backend placeholders)
 
-Database:
+Database
 
-MySQL (planned integration)
+MySQL (planned)
 
-Version Control:
+Version Control
 
 Git & GitHub
 
@@ -127,49 +134,59 @@ Project Structure
 FleetFlow/
 │
 ├── manager/
+│   ├── manager_dashboard.php
+│   ├── manager_vehicle_registry.php
+│   ├── manager_drivers.php
+│   ├── manager_trip_dispatcher.php
+│   ├── manager_maintenance.php
+│   └── manager_reports.php
+│
 ├── dispatcher/
 ├── safety/
 ├── finance/
 ├── assets/
 └── database/
 
-Each module is designed independently but follows a consistent layout and workflow.
+Each module follows a consistent layout and role-based functionality.
 
 Key Focus Areas
 
-Operational control instead of static dashboards
-
-Error prevention through validation rules
-
-Clear role separation
-
-Enterprise-style interface
-
 Real-world logistics workflow simulation
+
+Role-based operational control
+
+Business-rule validation
+
+Clean enterprise-style interface
+
+Error prevention instead of manual monitoring
 
 Built During
 
-Hackathon Project — Designed, structured, and implemented under time constraints with focus on real-world usability.
+Hackathon Project — Designed and implemented under time constraints with focus on practical usability and real operational scenarios.
 
 Team
 
 Divy Choksi — Frontend
+
 Dhruv Pandya — Backend
+
 Jay Gajjar — Documentation
-Naivedi Binjwa — Validation & testing
 
-Future Scope
+Naivedi Binjwa — Validation
 
-Database integration
+Future Enhancements
+
+Full database integration
 
 Real-time fleet tracking
 
 Automated maintenance alerts
 
-Cost optimization insights
+Advanced cost analytics
 
-Role-based analytics dashboards
+Smart dispatch optimization
 
-Project Goal
+Project Vision
 
-FleetFlow is not just a management tool — it is designed as a decision-support and operational control system for modern fleet operations.
+FleetFlow is designed as a decision-support and operational control system that helps organizations manage fleet operations efficiently, safely, and transparently.
