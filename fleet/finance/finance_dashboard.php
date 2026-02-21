@@ -97,7 +97,7 @@
             <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-gold/10 text-brand-gold border border-brand-gold/20 transition-all">
                 <i class="ph-fill ph-squares-four text-xl"></i><span class="font-medium">Dashboard</span>
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
+            <a href="finance_expenses.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
                 <i class="ph ph-receipt text-xl"></i><span class="font-medium">Expenses</span>
         </nav>
         
@@ -382,4 +382,5 @@
         animate();
     </script>
 </body>
+
 </html>
