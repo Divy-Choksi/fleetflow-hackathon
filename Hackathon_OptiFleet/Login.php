@@ -1,4 +1,13 @@
 
+<?php
+session_start();
+
+$message = $_SESSION['message'] ?? "";
+$messageType = $_SESSION['messageType'] ?? "";
+
+unset($_SESSION['message']);
+unset($_SESSION['messageType']);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -181,7 +190,6 @@
             </span>
         </div>
         <div class="hidden md:flex items-center gap-6 text-sm text-gray-400">
-            <a href="registration.html" class="hover:text-white transition-colors">Register</a>
             <a href="#" class="hover:text-white transition-colors">Documentation</a>
         </div>
     </header>
@@ -201,17 +209,18 @@
                     <h2 class="text-3xl font-semibold text-white mb-2">Welcome Back</h2>
                     <p class="text-gray-400 text-sm">Sign in to the Command Center</p>
                 </div>
-
-                <!-- PHP Message Display -->
-                <?php if($message): ?>
-                    <div class="mb-6 p-3 rounded-lg text-sm text-center font-medium <?php echo $messageType === 'success' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'; ?>">
-                        <?php echo htmlspecialchars($message); ?>
-                    </div>
-                <?php endif; ?>
+<?php if(!empty($message)): ?>
+    <div class="mb-6 p-3 rounded-lg text-sm text-center font-medium 
+    <?php echo $messageType === 'success' 
+        ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+        : 'bg-red-500/10 text-red-400 border border-red-500/20'; ?>">
+        <?php echo htmlspecialchars($message); ?>
+    </div>
+<?php endif; ?>
 
                 <!-- Form structure modified slightly to work with pure JS for the smooth UI demo, 
                      but retains form action and method for real backend use -->
-                <form id="loginForm" method="POST" action="login_logic.php" onsubmit="handleLogin(event)">
+                <form id="loginForm" method="POST" action="login_logic.php">
                     
                     <!-- Username Input -->
                     <div class="input-group">
@@ -247,6 +256,7 @@
                         <span>Login</span>
                         <i class="ph ph-sign-in"></i>
                     </button>
+
                 </form>
             </div>
         </div>
@@ -424,5 +434,3 @@
 </body>
 
 </html>
-
-
