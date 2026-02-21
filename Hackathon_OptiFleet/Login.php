@@ -1,24 +1,4 @@
 <?php
-// Mock PHP backend logic for demonstration purposes.
-// Dhruv (Backend) can replace this with actual database authentication.
-$message = '';
-$messageType = '';
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
-
-    // Basic mock validation
-    if (!empty($username) && !empty($password)) {
-        // In a real app, verify against the database here
-        $message = "Login successful! Redirecting to Command Center...";
-        $messageType = "success";
-    } else {
-        $message = "Please enter both username and password.";
-        $messageType = "error";
-    }
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -231,7 +211,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <!-- Form structure modified slightly to work with pure JS for the smooth UI demo, 
                      but retains form action and method for real backend use -->
-                <form id="loginForm" method="POST" action="login.php" onsubmit="handleLogin(event)">
+                <form id="loginForm" method="POST" action="login_logic.php" onsubmit="handleLogin(event)">
                     
                     <!-- Username Input -->
                     <div class="input-group">
@@ -446,4 +426,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         animate();
     </script>
 </body>
+
 </html>
