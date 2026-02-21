@@ -238,7 +238,7 @@
                     <p class="text-gray-400 text-sm">Create your command center account.</p>
                 </div>
 
-                <form id="registrationForm" method="POST" action="" onsubmit="handleRegistration(event)">
+                <form method="POST" action="reg_logic.php">
                     
                     <div class="input-group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -271,7 +271,7 @@
                             <option value="" disabled selected>Select Your Role</option>
                             <option value="dispatcher">Dispatcher</option>
                             <option value="safety_officer">Safety Officer</option>
-                            <option value="finance_manager">Finance Manager</option>
+                            <option value="finance_officer">Finance Officer</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                             <i class="ph ph-caret-down text-gray-400"></i>
@@ -359,8 +359,7 @@
 
         // --- Client-Side Form Validation ---
         function handleRegistration(event) {
-            // DHRUV: Remove event.preventDefault() below when connecting actual PHP backend
-            event.preventDefault(); 
+            
             
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
