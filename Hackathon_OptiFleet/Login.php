@@ -248,7 +248,7 @@ unset($_SESSION['messageType']);
                             <input type="checkbox" name="remember" class="custom-checkbox">
                             <span class="text-sm text-gray-400 group-hover:text-white transition-colors">Remember me</span>
                         </label>
-                        <a href="#" class="text-sm text-brand-gold hover:text-white transition-colors">Forgot password?</a>
+                        <a href="forgot_password.php" class="text-sm text-brand-gold hover:text-white transition-colors">Forgot password?</a>
                     </div>
 
                     <!-- Submit Button -->
