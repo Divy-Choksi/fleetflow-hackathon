@@ -25,8 +25,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $update->bindParam(':id', $user['user_id']);
             $update->execute();
 
-            header("Location: " . $user['role'] . "_dashboard.php");
-            exit();
+header("Location: " . $user['role'] . "/" . $user['role'] . "_dashboard.php");
+exit();
 
         } else {
             $_SESSION['message'] = "Invalid password.";
