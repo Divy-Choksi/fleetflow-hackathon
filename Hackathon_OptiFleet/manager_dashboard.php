@@ -527,4 +527,5 @@ $utilizationRate = ($totalVehicles > 0) ? round(($onTripVehicles / $totalVehicle
         });
     </script>
 </body>
+
 </html>
