@@ -247,10 +247,6 @@
                         <span>Login</span>
                         <i class="ph ph-sign-in"></i>
                     </button>
-
-                    <p class="text-center mt-8 text-sm text-gray-400">
-                        Don't have an account? <a href="registration.html" class="text-brand-gold hover:text-white transition-colors font-medium">Register here</a>
-                    </p>
                 </form>
             </div>
         </div>
@@ -428,4 +424,5 @@
 </body>
 
 </html>
+
 
