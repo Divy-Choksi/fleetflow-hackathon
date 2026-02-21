@@ -1,24 +1,89 @@
 <?php
+session_start();
+require "dbconnect.php";
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 // ==========================================
-// BACKEND INTEGRATION ZONE (For Dhruv)
-// ==========================================
-// DHRUV: 1. Start session and verify user authentication & role (e.g., RBAC: must be 'Fleet Manager').
-// session_start();
-// if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'manager') { header("Location: login.php"); exit; }
+// Total Vehicles
+$stmt = $conn->query("SELECT COUNT(*) FROM vehicles");
+$totalVehicles = $stmt->fetchColumn();
 
-// DHRUV: 2. Fetch Dashboard KPIs from Database
-$totalVehicles = 142; // Example: SELECT COUNT(*) FROM vehicles
-$availableVehicles = 85; // Example: SELECT COUNT(*) FROM vehicles WHERE status = 'Available'
-$onTripVehicles = 45; // Example: SELECT COUNT(*) FROM vehicles WHERE status = 'On Trip'
-$inMaintenance = 12; // Example: SELECT COUNT(*) FROM vehicles WHERE status = 'In Shop'
-$utilizationRate = ($totalVehicles > 0) ? round(($onTripVehicles / $totalVehicles) * 100, 1) : 0;
+// Available Vehicles
+$stmt = $conn->query("SELECT COUNT(*) FROM vehicles WHERE status = 'available'");
+$availableVehicles = $stmt->fetchColumn();
 
-// DHRUV: 3. Fetch Active Trips for the table (Limit to recent 5-10 for dashboard)
-// $activeTrips = query("SELECT trip_id, vehicle_name, driver_name, cargo_weight, route_from, route_to, status FROM trips WHERE status IN ('On Trip', 'Pending') LIMIT 5");
+// On Trip Vehicles
+$stmt = $conn->query("SELECT COUNT(*) FROM vehicles WHERE status = 'on_trip'");
+$onTripVehicles = $stmt->fetchColumn();
 
-// DHRUV: 4. Fetch Alerts / Quick Insights
-// $maintenanceAlerts = query("SELECT vehicle_name, issue FROM maintenance WHERE status = 'Pending'");
-// $expiredLicenses = query("SELECT driver_name FROM drivers WHERE license_expiry < CURDATE()");
+// In Maintenance
+$stmt = $conn->query("SELECT COUNT(*) FROM vehicles WHERE status = 'in_shop'");
+$inMaintenance = $stmt->fetchColumn();
+
+// Utilization Rate
+$utilizationRate = ($totalVehicles > 0) 
+    ? round(($onTripVehicles / $totalVehicles) * 100, 1) 
+    : 0;
+    $stmt = $conn->query("
+    SELECT v.license_plate, m.issue_description
+    FROM maintenance_logs m
+    JOIN vehicles v ON m.vehicle_id = v.vehicle_id
+    WHERE m.status = 'pending'
+    LIMIT 3
+");
+
+$maintenanceAlerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// licens
+$stmt = $conn->query("
+    SELECT full_name, license_expiry
+    FROM drivers
+    WHERE license_expiry <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+");
+
+$licenseAlerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+//graph
+$tripData = [];
+
+$stmt = $conn->query("
+    SELECT DATE(completed_at) as trip_date, COUNT(*) as total
+    FROM trips
+    WHERE status = 'completed'
+    AND completed_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+    GROUP BY DATE(completed_at)
+");
+
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Initialize last 7 days with 0
+for ($i = 6; $i >= 0; $i--) {
+    $date = date('Y-m-d', strtotime("-$i days"));
+    $tripData[$date] = 0;
+}
+
+// Fill actual data
+foreach ($results as $row) {
+    $tripData[$row['trip_date']] = $row['total'];
+}
+
+?>
+<?php
+$stmt = $conn->query("
+    SELECT t.trip_id, v.license_plate, d.full_name, 
+           t.cargo_weight, t.origin, t.destination, t.status
+    FROM trips t
+    JOIN vehicles v ON t.vehicle_id = v.vehicle_id
+    JOIN drivers d ON t.driver_id = d.driver_id
+    WHERE t.status IN ('dispatched')
+    ORDER BY t.created_at DESC
+    LIMIT 5
+");
+
+$activeTrips = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -188,7 +253,7 @@ $utilizationRate = ($totalVehicles > 0) ? round(($onTripVehicles / $totalVehicle
                         </div>
                     </div>
                     <!-- DHRUV: Logout logic link here -->
-                    <a href="login.php" class="text-gray-500 hover:text-status-danger transition-colors ml-2" title="Logout">
+                    <a href="logout.php" class="text-gray-500 hover:text-status-danger transition-colors ml-2" title="Logout">
                         <i class="ph ph-sign-out text-2xl"></i>
                     </a>
                 </div>
@@ -315,56 +380,30 @@ $utilizationRate = ($totalVehicles > 0) ? round(($onTripVehicles / $totalVehicle
                                 </thead>
                                 <tbody class="text-sm divide-y divide-white/5">
                                     <!-- DHRUV: Loop through DB results here -->
-                                    <tr class="hover:bg-white/5 transition-colors group">
-                                        <td class="py-4 pl-2 font-medium text-white">#TRP-8492</td>
-                                        <td class="py-4 text-gray-300">Van-05 <span class="text-xs text-gray-500 block">TN-22-AX-1029</span></td>
-                                        <td class="py-4 text-gray-300">Alex Thompson</td>
-                                        <td class="py-4 text-gray-300">450kg <span class="text-xs text-gray-500 block">Warehouse A &rarr; Hub B</span></td>
-                                        <td class="py-4 text-center">
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-brand-gold/10 text-brand-gold border border-brand-gold/20">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-brand-gold mr-1.5 animate-pulse"></span> On Trip
-                                            </span>
-                                        </td>
-                                        <td class="py-4 text-right pr-2">
-                                            <button class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Complete Trip">
-                                                <i class="ph-fill ph-check-circle text-lg"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <!-- Mock Row 2 -->
-                                    <tr class="hover:bg-white/5 transition-colors group">
-                                        <td class="py-4 pl-2 font-medium text-white">#TRP-8493</td>
-                                        <td class="py-4 text-gray-300">Truck-02 <span class="text-xs text-gray-500 block">MH-14-BZ-8821</span></td>
-                                        <td class="py-4 text-gray-300">David Chen</td>
-                                        <td class="py-4 text-gray-300">1800kg <span class="text-xs text-gray-500 block">Port &rarr; City Center</span></td>
-                                        <td class="py-4 text-center">
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-brand-gold/10 text-brand-gold border border-brand-gold/20">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-brand-gold mr-1.5 animate-pulse"></span> On Trip
-                                            </span>
-                                        </td>
-                                        <td class="py-4 text-right pr-2">
-                                            <button class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Complete Trip">
-                                                <i class="ph-fill ph-check-circle text-lg"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <!-- Mock Row 3 -->
-                                    <tr class="hover:bg-white/5 transition-colors group">
-                                        <td class="py-4 pl-2 font-medium text-white">#TRP-8494</td>
-                                        <td class="py-4 text-gray-300">Bike-11 <span class="text-xs text-gray-500 block">DL-01-CQ-5512</span></td>
-                                        <td class="py-4 text-gray-300">Sarah Jenkins</td>
-                                        <td class="py-4 text-gray-300">15kg <span class="text-xs text-gray-500 block">Hub B &rarr; Local Delivery</span></td>
-                                        <td class="py-4 text-center">
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-status-success/10 text-status-success border border-status-success/20">
-                                                Available
-                                            </span>
-                                        </td>
-                                        <td class="py-4 text-right pr-2">
-                                            <button class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="View Details">
-                                                <i class="ph ph-eye text-lg"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    <?php foreach($activeTrips as $trip): ?>
+<tr class="hover:bg-white/5 transition-colors group">
+    <td class="py-4 pl-2 font-medium text-white">
+        #TRP-<?= $trip['trip_id'] ?>
+    </td>
+    <td class="py-4 text-gray-300">
+        <?= $trip['license_plate'] ?>
+    </td>
+    <td class="py-4 text-gray-300">
+        <?= $trip['full_name'] ?>
+    </td>
+    <td class="py-4 text-gray-300">
+        <?= $trip['cargo_weight'] ?>kg
+        <span class="text-xs text-gray-500 block">
+            <?= $trip['origin'] ?> → <?= $trip['destination'] ?>
+        </span>
+    </td>
+    <td class="py-4 text-center">
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-brand-gold/10 text-brand-gold border border-brand-gold/20">
+            On Trip
+        </span>
+    </td>
+</tr>
+<?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -390,72 +429,18 @@ $utilizationRate = ($totalVehicles > 0) ? round(($onTripVehicles / $totalVehicle
                 <!-- RIGHT COLUMN: Intelligence & Alerts -->
                 <div class="space-y-8">
                     
-                    <!-- Winning Element: Smart Fleet Insight Panel -->
-                    <div class="glass-panel rounded-3xl p-1 relative overflow-hidden">
-                        <div class="absolute inset-0 bg-gradient-to-br from-brand-gold/20 via-transparent to-transparent opacity-50"></div>
-                        <div class="bg-[#0A0A0B]/90 backdrop-blur-md rounded-[22px] p-5 h-full relative z-10 border border-white/5">
-                            <div class="flex items-center gap-2 mb-4">
-                                <i class="ph-fill ph-lightbulb text-brand-gold text-xl animate-pulse"></i>
-                                <h3 class="text-lg font-semibold text-white">Smart Fleet Insights</h3>
-                            </div>
-                            <ul class="space-y-4">
-                                <li class="flex items-start gap-3 text-sm">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-status-info mt-1.5 shrink-0"></div>
-                                    <p class="text-gray-300"><strong>Truck-02</strong> has the highest utilization this month. Consider scheduling preventative maintenance soon.</p>
-                                </li>
-                                <li class="flex items-start gap-3 text-sm">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-status-success mt-1.5 shrink-0"></div>
-                                    <p class="text-gray-300"><strong>Van-03</strong> is highly efficient for sub-500kg local routes. Recommended for upcoming Pending Cargo.</p>
-                                </li>
-                                <li class="flex items-start gap-3 text-sm">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-status-warning mt-1.5 shrink-0"></div>
-                                    <p class="text-gray-300">3 Vehicles have been idle for > 48 hours. Review regional dispatch algorithms.</p>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
 
                     <!-- Alerts / Quick Insights Panel -->
-                    <div class="glass-panel rounded-3xl p-6">
-                        <div class="flex justify-between items-center mb-5">
-                            <h3 class="text-lg font-semibold text-white">Action Required</h3>
-                            <span class="bg-status-danger/20 text-status-danger text-xs font-bold px-2 py-1 rounded-md">3 Alerts</span>
-                        </div>
-                        
-                        <!-- DHRUV: Loop dynamic alerts here -->
-                        <div class="space-y-3">
-                            <!-- Alert 1 -->
-                            <div class="bg-white/5 border border-status-danger/20 rounded-xl p-3 flex gap-3 hover:bg-white/10 transition-colors cursor-pointer">
-                                <div class="w-8 h-8 rounded-lg bg-status-danger/10 flex items-center justify-center shrink-0">
-                                    <i class="ph ph-wrench text-status-danger"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-medium text-white">Maintenance Overdue</h4>
-                                    <p class="text-xs text-gray-400 mt-0.5">Truck-15 missed 10k km Oil Change.</p>
-                                </div>
-                            </div>
-                            <!-- Alert 2 -->
-                            <div class="bg-white/5 border border-status-warning/20 rounded-xl p-3 flex gap-3 hover:bg-white/10 transition-colors cursor-pointer">
-                                <div class="w-8 h-8 rounded-lg bg-status-warning/10 flex items-center justify-center shrink-0">
-                                    <i class="ph ph-identification-card text-status-warning"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-medium text-white">License Expiring</h4>
-                                    <p class="text-xs text-gray-400 mt-0.5">Driver Robert M. license expires in 5 days.</p>
-                                </div>
-                            </div>
-                            <!-- Alert 3 -->
-                            <div class="bg-white/5 border border-status-info/20 rounded-xl p-3 flex gap-3 hover:bg-white/10 transition-colors cursor-pointer">
-                                <div class="w-8 h-8 rounded-lg bg-status-info/10 flex items-center justify-center shrink-0">
-                                    <i class="ph ph-package text-status-info"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-medium text-white">Pending Cargo Bottleneck</h4>
-                                    <p class="text-xs text-gray-400 mt-0.5">12 Shipments waiting. Dispatch required.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <?php foreach($maintenanceAlerts as $alert): ?>
+<div class="bg-white/5 border border-status-danger/20 rounded-xl p-3 flex gap-3">
+    <div>
+        <h4 class="text-sm font-medium text-white">Maintenance Pending</h4>
+        <p class="text-xs text-gray-400">
+            <?= $alert['license_plate'] ?> - <?= $alert['issue_description'] ?>
+        </p>
+    </div>
+</div>
+<?php endforeach; ?>
 
                 </div>
             </div>
@@ -464,67 +449,60 @@ $utilizationRate = ($totalVehicles > 0) ? round(($onTripVehicles / $totalVehicle
     </div>
 
     <!-- Initialize Chart.js -->
+     <script>
+const tripCounts = <?= json_encode(array_values($tripData)); ?>;
+</script>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const ctx = document.getElementById('utilizationChart').getContext('2d');
-            
-            // Gradient for area under line
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(212, 175, 55, 0.5)'); // Brand Gold
-            gradient.addColorStop(1, 'rgba(212, 175, 55, 0.0)');
+const tripCounts = <?= json_encode(array_values($tripData)); ?>;
 
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                        label: 'Completed Trips',
-                        data: [42, 48, 55, 50, 62, 45, 30],
-                        borderColor: '#D4AF37', // Brand Gold
-                        backgroundColor: gradient,
-                        borderWidth: 2,
-                        pointBackgroundColor: '#0A0A0B',
-                        pointBorderColor: '#D4AF37',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        fill: true,
-                        tension: 0.4 // Smooth curves
-                    }]
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('utilizationChart').getContext('2d');
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(212, 175, 55, 0.5)');
+    gradient.addColorStop(1, 'rgba(212, 175, 55, 0.0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: <?= json_encode(array_map(function($i){
+                return date('D', strtotime("-$i days"));
+            }, range(6,0))); ?>,
+            datasets: [{
+                label: 'Completed Trips',
+                data: tripCounts, // 🔥 THIS IS IMPORTANT
+                borderColor: '#D4AF37',
+                backgroundColor: gradient,
+                borderWidth: 2,
+                pointBackgroundColor: '#0A0A0B',
+                pointBorderColor: '#D4AF37',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: 'rgba(255,255,255,0.5)' }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(10, 10, 11, 0.9)',
-                            titleColor: '#fff',
-                            bodyColor: '#e5e7eb',
-                            borderColor: 'rgba(212, 175, 55, 0.3)',
-                            borderWidth: 1,
-                            padding: 10,
-                            displayColors: false
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
-                            ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { family: "'Outfit', sans-serif" } }
-                        },
-                        y: {
-                            grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
-                            ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { family: "'Outfit', sans-serif" }, stepSize: 20 },
-                            beginAtZero: true
-                        }
-                    },
-                    interaction: {
-                        intersect: false,
-                        mode: 'index',
-                    },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: 'rgba(255,255,255,0.5)' }
                 }
-            });
-        });
-    </script>
+            }
+        }
+    });
+});
+</script>
 </body>
 </html>
