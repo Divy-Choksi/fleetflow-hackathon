@@ -241,104 +241,11 @@ $vehicles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
                         <input type="text" placeholder="Search plate or model..." class="form-input pl-9 py-2">
                     </div>
-                    <button id="toggleFormBtn" class="btn-premium px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
-                        <i class="ph-bold ph-plus"></i> Add New Vehicle
-                    </button>
+                    <a href="add_vehicle.php"
+   class="btn-premium px-5 py-2.5 rounded-xl text-sm font-bold">
+   Add New Vehicle
+                </a>
                 </div>
-            </div>
-
-            <!-- Add Vehicle Form (Expandable Panel) -->
-            <div id="addVehicleFormContainer" class="glass-panel rounded-3xl px-8 mb-8 border-white/5 relative">
-                <button id="closeFormBtn" class="absolute top-4 right-6 text-gray-500 hover:text-white transition-colors">
-                    <i class="ph ph-x text-xl"></i>
-                </button>
-                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/5">
-                    <div class="w-10 h-10 rounded-xl bg-brand-gold/10 flex items-center justify-center border border-brand-gold/20">
-                        <i class="ph-fill ph-car-profile text-xl text-brand-gold"></i>
-                    </div>
-                    <h3 class="text-lg font-medium text-white">Register New Vehicle</h3>
-                </div>
-
-                <form method="POST" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Model -->
-                        <div class="space-y-2 relative">
-                            <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider">Vehicle Model</label>
-                            <div class="relative">
-                                <i class="ph ph-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-                                <input type="text" id="vModel" placeholder="e.g. Ford Transit 250" class="form-input pl-10" required>
-                            </div>
-                            <p class="text-status-danger text-[11px] hidden error-msg">Model name is required.</p>
-                        </div>
-
-                        <!-- Plate Number -->
-                        <div class="space-y-2 relative">
-                            <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider">Plate Number</label>
-                            <div class="relative">
-                                <i class="ph ph-hash absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-                                <input type="text" id="vPlate" placeholder="e.g. ABC-1234" class="form-input pl-10 uppercase" required>
-                            </div>
-                            <p class="text-status-danger text-[11px] hidden error-msg">Enter a valid plate format.</p>
-                        </div>
-
-                        <!-- Type -->
-                        <div class="space-y-2 relative">
-                            <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider">Vehicle Type</label>
-                            <div class="relative">
-                                <i class="ph ph-truck absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10"></i>
-                                <select id="vType" class="form-input pl-10 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:0.7rem] bg-no-repeat bg-[position:right_1rem_center]" required>
-                                    <option value="" disabled selected>Select vehicle type</option>
-                                    <option value="Truck">Heavy Truck</option>
-                                    <option value="Van">Cargo Van</option>
-                                    <option value="Bike">Delivery Bike</option>
-                                </select>
-                            </div>
-                            <p class="text-status-danger text-[11px] hidden error-msg">Select a vehicle type.</p>
-                        </div>
-
-                        <!-- Capacity -->
-                        <div class="space-y-2 relative">
-                            <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider">Capacity (kg)</label>
-                            <div class="relative">
-                                <i class="ph ph-scales absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-                                <input type="number" id="vCapacity" placeholder="e.g. 1500" class="form-input pl-10" min="1" required>
-                            </div>
-                            <p class="text-status-danger text-[11px] hidden error-msg">Must be a valid positive number.</p>
-                        </div>
-
-                        <!-- Odometer -->
-                        <div class="space-y-2 relative">
-                            <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider">Odometer (km)</label>
-                            <div class="relative">
-                                <i class="ph ph-gauge absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-                                <input type="number" id="vOdo" placeholder="e.g. 12500" class="form-input pl-10" min="0" required>
-                            </div>
-                            <p class="text-status-danger text-[11px] hidden error-msg">Odometer cannot be negative.</p>
-                        </div>
-
-                        <!-- Initial Status -->
-                        <div class="space-y-2 relative">
-                            <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider">Initial Status</label>
-                            <div class="relative">
-                                <i class="ph ph-activity absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10"></i>
-                                <select id="vStatus" class="form-input pl-10 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:0.7rem] bg-no-repeat bg-[position:right_1rem_center]" required>
-                                    <option value="" disabled selected>Select status</option>
-                                    <option value="Available">Available</option>
-                                    <option value="In Maintenance">In Maintenance</option>
-                                    <option value="Retired">Retired</option>
-                                </select>
-                            </div>
-                            <p class="text-status-danger text-[11px] hidden error-msg">Please assign an initial status.</p>
-                        </div>
-                    </div>
-
-                    <!-- Submit -->
-                    <div class="pt-6 mt-2 border-t border-white/5 flex items-center justify-end">
-                        <button type="submit" id="submitVehicleBtn" class="btn-premium px-8 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2" disabled>
-                            <i class="ph-bold ph-plus"></i> Add Vehicle
-                        </button>
-                    </div>
-                </form>
             </div>
 
             <!-- Vehicle List Table Area -->
@@ -360,6 +267,7 @@ $vehicles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <tbody class="text-sm divide-y divide-white/5">
 <?php foreach ($vehicles as $v): ?>
 <tr class="hover:bg-white/5 transition-colors group">
+
     <td class="py-4 pl-6 font-medium text-white">
         #VH-<?= $v['vehicle_id']; ?>
     </td>
@@ -369,34 +277,34 @@ $vehicles = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </td>
 
     <td class="py-4 px-4 font-mono text-gray-200">
-        <?= htmlspecialchars($v['plate_number']); ?>
+        <?= htmlspecialchars($v['license_plate']); ?>
     </td>
 
     <td class="py-4 px-4 text-gray-300">
-        <?= htmlspecialchars($v['vehicle_type']); ?>
+        <?= htmlspecialchars($v['type']); ?>
     </td>
 
     <td class="py-4 px-4 text-right text-gray-300">
-        <?= number_format($v['capacity_kg']); ?>
+        <?= number_format($v['max_capacity'], 2); ?>
     </td>
 
     <td class="py-4 px-4 text-right text-gray-300">
-        <?= number_format($v['odometer_km']); ?>
+        <?= number_format($v['odometer']); ?>
     </td>
 
     <td class="py-4 px-4 text-center">
-        <?= $v['status']; ?>
+        <?= ucfirst(str_replace('_',' ', $v['status'])); ?>
     </td>
 
     <td class="py-4 pr-6 text-right">
-        <a href="?update_status=Available&id=<?= $v['vehicle_id']; ?>" class="text-green-400">✔</a>
-        <a href="?update_status=In Maintenance&id=<?= $v['vehicle_id']; ?>" class="text-yellow-400 ml-2">🛠</a>
-        <a href="?update_status=Retired&id=<?= $v['vehicle_id']; ?>" class="text-gray-400 ml-2">📦</a>
+        <a href="?update_status=available&id=<?= $v['vehicle_id']; ?>" class="text-green-400">✔</a>
+        <a href="?update_status=in_shop&id=<?= $v['vehicle_id']; ?>" class="text-yellow-400 ml-2">🛠</a>
+        <a href="?update_status=retired&id=<?= $v['vehicle_id']; ?>" class="text-gray-400 ml-2">📦</a>
     </td>
+
 </tr>
 <?php endforeach; ?>
-</tbody>
-                    </table>
+</tbody>                    </table>
                 </div>
                 
                 <!-- Pagination Footer -->
