@@ -1,13 +1,65 @@
 <?php
-// ================= BACKEND PLACEHOLDER =================
-// 1. Verify manager session and role
-// 2. Fetch all vehicles from database
-// 3. Handle Add Vehicle form submission
-// 4. Validate unique plate number
-// 5. Update vehicle status (maintenance / available / retired)
-// 6. Filter vehicles based on status
-// 7. Handle edit and update operations
-// =======================================================
+session_start();
+require "../dbconnect.php";   // adjust path if needed
+
+// 🔐 1. Verify Manager Session
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'manager') {
+    header("Location: ../login.php");
+    exit();
+}
+
+// ================= ADD VEHICLE =================
+if (isset($_POST['add_vehicle'])) {
+
+    $model = trim($_POST['model']);
+    $plate = strtoupper(trim($_POST['plate']));
+    $type = $_POST['type'];
+    $capacity = $_POST['capacity'];
+    $odometer = $_POST['odometer'];
+    $status = $_POST['status'];
+
+    // 2️⃣ Check unique plate
+    $check = $conn->prepare("SELECT vehicle_id FROM vehicles WHERE plate_number = ?");
+    $check->execute([$plate]);
+
+    if ($check->rowCount() > 0) {
+        $error = "Plate number already exists!";
+    } else {
+
+        $stmt = $conn->prepare("INSERT INTO vehicles 
+            (model, plate_number, vehicle_type, capacity_kg, odometer_km, status)
+            VALUES (?, ?, ?, ?, ?, ?)");
+
+        $stmt->execute([$model, $plate, $type, $capacity, $odometer, $status]);
+
+        $success = "Vehicle added successfully!";
+    }
+}
+
+// ================= STATUS UPDATE =================
+if (isset($_GET['update_status']) && isset($_GET['id'])) {
+
+    $id = $_GET['id'];
+    $newStatus = $_GET['update_status'];
+
+    $update = $conn->prepare("UPDATE vehicles SET status = ? WHERE vehicle_id = ?");
+    $update->execute([$newStatus, $id]);
+
+    header("Location: manager_vehicle_registry.php");
+    exit();
+}
+
+// ================= FILTER =================
+$filter = $_GET['filter'] ?? 'all';
+
+if ($filter === 'all') {
+    $stmt = $conn->query("SELECT * FROM vehicles ORDER BY vehicle_id DESC");
+} else {
+    $stmt = $conn->prepare("SELECT * FROM vehicles WHERE status = ? ORDER BY vehicle_id DESC");
+    $stmt->execute([$filter]);
+}
+
+$vehicles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -126,64 +178,7 @@
     <div class="ambient-glow bottom-[-300px] left-[-200px]" style="background: radial-gradient(circle, rgba(10, 150, 255, 0.03) 0%, transparent 70%);"></div>
 
     <!-- Sidebar Navigation -->
-    <aside class="w-64 glass-panel flex flex-col z-20 shrink-0 border-r border-white/5">
-        <div class="h-20 flex items-center px-6 border-b border-white/5 shrink-0">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-gold to-yellow-600 flex items-center justify-center mr-3">
-                <i class="ph ph-steering-wheel text-black text-xl font-bold"></i>
-            </div>
-            <span class="text-xl font-semibold tracking-wide text-white">
-                Opti<span class="text-brand-gold">Fleet</span>
-            </span>
-        </div>
-
-        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-2">
-            <a href="dashboard.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
-                <i class="ph ph-squares-four text-xl"></i>
-                <span class="font-medium">Dashboard</span>
-            </a>
-            
-            <!-- ACTIVE STATE: Vehicle Registry -->
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-gold/10 text-brand-gold border border-brand-gold/20 transition-all">
-                <i class="ph-fill ph-truck text-xl"></i>
-                <span class="font-medium">Vehicle Registry</span>
-            </a>
-            
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
-                <i class="ph ph-users text-xl"></i>
-                <span class="font-medium">Drivers</span>
-            </a>
-
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
-                <i class="ph ph-user-plus text-xl"></i>
-                <span class="font-medium">Registration</span>
-            </a>
-            
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
-                <i class="ph ph-map-pin-line text-xl"></i>
-                <span class="font-medium">Trip Dispatcher</span>
-            </a>
-            
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all flex-wrap relative">
-                <i class="ph ph-wrench text-xl"></i>
-                <span class="font-medium">Maintenance</span>
-                <span class="absolute right-4 w-2 h-2 rounded-full bg-status-danger"></span>
-            </a>
-
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
-                <i class="ph ph-chart-line-up text-xl"></i>
-                <span class="font-medium">Reports</span>
-            </a>
-        </nav>
-        
-        <div class="p-4 border-t border-white/5">
-            <div class="glass-card rounded-xl p-4 text-center">
-                <i class="ph-fill ph-headset text-2xl text-brand-gold mb-2"></i>
-                <p class="text-xs text-gray-400 mb-3">Need Help?</p>
-                <button class="w-full py-2 text-xs font-medium rounded-lg bg-white/5 hover:bg-white/10 text-white transition-colors">Support Center</button>
-            </div>
-        </div>
-    </aside>
-
+    <?php include 'sidebar.php'; ?>
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col h-full relative z-10 overflow-hidden">
         
@@ -264,7 +259,7 @@
                     <h3 class="text-lg font-medium text-white">Register New Vehicle</h3>
                 </div>
 
-                <form id="vehicleForm" class="space-y-6" novalidate>
+                <form method="POST" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <!-- Model -->
                         <div class="space-y-2 relative">
@@ -363,124 +358,44 @@
                             </tr>
                         </thead>
                         <tbody class="text-sm divide-y divide-white/5">
-                            
-                            <!-- Available Row -->
-                            <tr class="hover:bg-white/5 transition-colors group">
-                                <td class="py-4 pl-6 font-medium text-white">#VH-1042</td>
-                                <td class="py-4 px-4 text-gray-300">Ford Transit 250</td>
-                                <td class="py-4 px-4 font-mono text-gray-200">DEF-9012</td>
-                                <td class="py-4 px-4">
-                                    <div class="flex items-center gap-2 text-gray-300">
-                                        <i class="ph-fill ph-van text-brand-gold text-lg"></i> Van
-                                    </div>
-                                </td>
-                                <td class="py-4 px-4 text-right text-gray-300">1,500</td>
-                                <td class="py-4 px-4 text-right text-gray-300">24,150</td>
-                                <td class="py-4 px-4 text-center">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-status-success/10 text-status-success border border-status-success/20">
-                                        Available
-                                    </span>
-                                </td>
-                                <td class="py-4 pr-6 text-right">
-                                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-brand-gold hover:text-black flex items-center justify-center text-gray-400 transition-colors" title="Edit">
-                                            <i class="ph ph-pencil-simple text-lg"></i>
-                                        </button>
-                                        <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-status-danger hover:text-white flex items-center justify-center text-gray-400 transition-colors" title="Send to Maintenance">
-                                            <i class="ph ph-wrench text-lg"></i>
-                                        </button>
-                                        <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-status-gray hover:text-white flex items-center justify-center text-gray-400 transition-colors" title="Retire Vehicle">
-                                            <i class="ph ph-archive text-lg"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+<?php foreach ($vehicles as $v): ?>
+<tr class="hover:bg-white/5 transition-colors group">
+    <td class="py-4 pl-6 font-medium text-white">
+        #VH-<?= $v['vehicle_id']; ?>
+    </td>
 
-                            <!-- On Trip Row -->
-                            <tr class="hover:bg-white/5 transition-colors group">
-                                <td class="py-4 pl-6 font-medium text-white">#VH-1021</td>
-                                <td class="py-4 px-4 text-gray-300">Volvo VNL 860</td>
-                                <td class="py-4 px-4 font-mono text-gray-200">XYZ-7741</td>
-                                <td class="py-4 px-4">
-                                    <div class="flex items-center gap-2 text-gray-300">
-                                        <i class="ph-fill ph-truck text-status-info text-lg"></i> Truck
-                                    </div>
-                                </td>
-                                <td class="py-4 px-4 text-right text-gray-300">18,000</td>
-                                <td class="py-4 px-4 text-right text-gray-300">142,890</td>
-                                <td class="py-4 px-4 text-center">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-status-warning/10 text-status-warning border border-status-warning/20">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-status-warning mr-1.5 animate-pulse"></span> On Trip
-                                    </span>
-                                </td>
-                                <td class="py-4 pr-6 text-right">
-                                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-brand-gold hover:text-black flex items-center justify-center text-gray-400 transition-colors" title="Edit">
-                                            <i class="ph ph-pencil-simple text-lg"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+    <td class="py-4 px-4 text-gray-300">
+        <?= htmlspecialchars($v['model']); ?>
+    </td>
 
-                            <!-- In Maintenance Row -->
-                            <tr class="hover:bg-white/5 transition-colors group">
-                                <td class="py-4 pl-6 font-medium text-white">#VH-0984</td>
-                                <td class="py-4 px-4 text-gray-300">Mercedes Sprinter</td>
-                                <td class="py-4 px-4 font-mono text-gray-200">LMN-5522</td>
-                                <td class="py-4 px-4">
-                                    <div class="flex items-center gap-2 text-gray-300">
-                                        <i class="ph-fill ph-van text-brand-gold text-lg"></i> Van
-                                    </div>
-                                </td>
-                                <td class="py-4 px-4 text-right text-gray-300">1,800</td>
-                                <td class="py-4 px-4 text-right text-gray-300">85,400</td>
-                                <td class="py-4 px-4 text-center">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-status-danger/10 text-status-danger border border-status-danger/20">
-                                        In Maintenance
-                                    </span>
-                                </td>
-                                <td class="py-4 pr-6 text-right">
-                                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-brand-gold hover:text-black flex items-center justify-center text-gray-400 transition-colors" title="Edit">
-                                            <i class="ph ph-pencil-simple text-lg"></i>
-                                        </button>
-                                        <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-status-success hover:text-white flex items-center justify-center text-gray-400 transition-colors" title="Mark Available">
-                                            <i class="ph ph-check-circle text-lg"></i>
-                                        </button>
-                                        <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-status-gray hover:text-white flex items-center justify-center text-gray-400 transition-colors" title="Retire Vehicle">
-                                            <i class="ph ph-archive text-lg"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+    <td class="py-4 px-4 font-mono text-gray-200">
+        <?= htmlspecialchars($v['plate_number']); ?>
+    </td>
 
-                            <!-- Retired Row -->
-                            <tr class="hover:bg-white/5 transition-colors group opacity-60">
-                                <td class="py-4 pl-6 font-medium text-white">#VH-0105</td>
-                                <td class="py-4 px-4 text-gray-300">Honda Activa 6G</td>
-                                <td class="py-4 px-4 font-mono text-gray-200">RET-0099</td>
-                                <td class="py-4 px-4">
-                                    <div class="flex items-center gap-2 text-gray-300">
-                                        <i class="ph-fill ph-motorcycle text-gray-400 text-lg"></i> Bike
-                                    </div>
-                                </td>
-                                <td class="py-4 px-4 text-right text-gray-300">20</td>
-                                <td class="py-4 px-4 text-right text-gray-300">198,500</td>
-                                <td class="py-4 px-4 text-center">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-white/5 text-gray-400 border border-white/10">
-                                        Retired
-                                    </span>
-                                </td>
-                                <td class="py-4 pr-6 text-right">
-                                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-brand-gold hover:text-black flex items-center justify-center text-gray-400 transition-colors" title="View Records">
-                                            <i class="ph ph-file-text text-lg"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+    <td class="py-4 px-4 text-gray-300">
+        <?= htmlspecialchars($v['vehicle_type']); ?>
+    </td>
 
-                        </tbody>
+    <td class="py-4 px-4 text-right text-gray-300">
+        <?= number_format($v['capacity_kg']); ?>
+    </td>
+
+    <td class="py-4 px-4 text-right text-gray-300">
+        <?= number_format($v['odometer_km']); ?>
+    </td>
+
+    <td class="py-4 px-4 text-center">
+        <?= $v['status']; ?>
+    </td>
+
+    <td class="py-4 pr-6 text-right">
+        <a href="?update_status=Available&id=<?= $v['vehicle_id']; ?>" class="text-green-400">✔</a>
+        <a href="?update_status=In Maintenance&id=<?= $v['vehicle_id']; ?>" class="text-yellow-400 ml-2">🛠</a>
+        <a href="?update_status=Retired&id=<?= $v['vehicle_id']; ?>" class="text-gray-400 ml-2">📦</a>
+    </td>
+</tr>
+<?php endforeach; ?>
+</tbody>
                     </table>
                 </div>
                 
