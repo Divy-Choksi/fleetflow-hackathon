@@ -125,7 +125,7 @@
                 <i class="ph-fill ph-squares-four text-xl"></i>
                 <span class="font-medium">Dashboard</span>
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
+            <a href="dispatcher_create_assign_trip.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
                 <i class="ph ph-paper-plane-tilt text-xl"></i>
                 <span class="font-medium">Create & Assign Trip</span>
             </a>
@@ -482,4 +482,5 @@
     </div>
 
 </body>
+
 </html>
